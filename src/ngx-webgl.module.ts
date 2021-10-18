@@ -1,29 +1,45 @@
-import { NgModule } from '@angular/core';
+import { RootRenderer, NgModule, APP_INITIALIZER, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CanvasRootRenderer } from './canvas-renderer';
 
 import {
-  StatsComponent,
   RendererComponent,
   SceneComponent,
   PerspectiveCameraComponent,
-  PointLightComponent
+  PointLightComponent,
+  ObjectComponent,
+  SphereComponent,
+  OrbitControlsComponent,
+  StatsComponent
 } from './components';
 
 @NgModule({
   imports: [CommonModule],
   declarations: [
-    StatsComponent,
     RendererComponent,
     SceneComponent,
     PerspectiveCameraComponent,
-    PointLightComponent
+    ObjectComponent,
+    PointLightComponent,
+    StatsComponent,
+    OrbitControlsComponent,
+    SphereComponent
   ],
   exports: [
-    StatsComponent,
     RendererComponent,
     SceneComponent,
     PerspectiveCameraComponent,
-    PointLightComponent
+    PointLightComponent,
+    ObjectComponent,
+    StatsComponent,
+    SphereComponent,
+    OrbitControlsComponent
+  ],
+  providers: [
+    {
+      provide: RootRenderer,
+      useClass: CanvasRootRenderer
+    }
   ]
 })
 export class NgxWebGlModule { }
