@@ -5,7 +5,7 @@ import {
 import { WebGLRenderer, Scene, PerspectiveCamera } from 'three';
 import { SceneComponent } from './scene.component';
 import { PerspectiveCameraComponent } from './cameras';
-import { OrbitControlsComponent } from './controls';
+import { OrbitControlsComponent, VRControlsComponent } from './controls';
 
 @Component({
   selector: 'ngx-renderer',
@@ -27,6 +27,9 @@ export class RendererComponent implements OnInit, AfterContentInit {
   @ContentChild(OrbitControlsComponent)
   orbitControls: OrbitControlsComponent;
 
+  @ContentChild(VRControlsComponent)
+  vrControls: VRControlsComponent;
+
   @ContentChild(PerspectiveCameraComponent, { descendants: true })
   camera: PerspectiveCameraComponent;
 
@@ -43,17 +46,28 @@ export class RendererComponent implements OnInit, AfterContentInit {
   ngAfterContentInit(): void {
     this.renderer = new WebGLRenderer({
       antialias: true,
+      clearAlpha: 1,
+      alpha: true,
+      preserveDrawingBuffer: true,
       canvas: this.canvas.nativeElement
     });
 
     this.renderer.setSize(this.width, this.height);
     this.renderer.setPixelRatio(Math.floor(window.devicePixelRatio));
 
+    if(this.scene.fog) {
+      this.renderer.setClearColor(this.scene.fog.color);
+    }
+
     this.camera.height = this.height;
     this.camera.width = this.width;
 
     if(this.orbitControls) {
       this.orbitControls.setupControls(this.camera.camera, this.renderer);
+    }
+
+    if(this.vrControls) {
+      this.vrControls.setupControls(this.camera.camera, this.renderer);
     }
 
     this.ngZone.runOutsideAngular(this.render.bind(this));
@@ -66,6 +80,10 @@ export class RendererComponent implements OnInit, AfterContentInit {
 
       if(this.orbitControls) {
         this.orbitControls.updateControls(this.scene.scene, this.camera.camera);
+      }
+
+      if(this.vrControls) {
+        this.vrControls.updateControls(this.scene.scene, this.camera.camera);
       }
 
       requestAnimationFrame(() => this.render());
@@ -84,6 +102,10 @@ export class RendererComponent implements OnInit, AfterContentInit {
 
       this.height = height;
       this.width = width;
+
+      if(this.renderer) {
+        this.renderer.setSize(this.width, this.height);
+      }
     }
   }
 

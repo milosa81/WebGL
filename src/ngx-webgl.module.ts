@@ -1,15 +1,20 @@
-import { RootRenderer, NgModule, APP_INITIALIZER, NgZone } from '@angular/core';
+import { RendererFactoryV2, NgModule, APP_INITIALIZER, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CanvasRootRenderer } from './canvas-renderer';
+import { CanvasDomRendererFactoryV2 } from './canvas-renderer';
 
 import {
   RendererComponent,
   SceneComponent,
   PerspectiveCameraComponent,
   PointLightComponent,
+  FogComponent,
   ObjectComponent,
+  TextComponent,
+  DirectionalLightComponent,
+  AmbientLightComponent,
   SphereComponent,
   OrbitControlsComponent,
+  VRControlsComponent,
   StatsComponent
 } from './components';
 
@@ -19,8 +24,13 @@ import {
     RendererComponent,
     SceneComponent,
     PerspectiveCameraComponent,
+    FogComponent,
+    VRControlsComponent,
     ObjectComponent,
+    AmbientLightComponent,
     PointLightComponent,
+    DirectionalLightComponent,
+    TextComponent,
     StatsComponent,
     OrbitControlsComponent,
     SphereComponent
@@ -28,17 +38,23 @@ import {
   exports: [
     RendererComponent,
     SceneComponent,
+    AmbientLightComponent,
+    FogComponent,
     PerspectiveCameraComponent,
+    DirectionalLightComponent,
     PointLightComponent,
     ObjectComponent,
     StatsComponent,
+    TextComponent,
     SphereComponent,
-    OrbitControlsComponent
+    OrbitControlsComponent,
+    VRControlsComponent
   ],
   providers: [
+    CanvasDomRendererFactoryV2,
     {
-      provide: RootRenderer,
-      useClass: CanvasRootRenderer
+      provide: RendererFactoryV2,
+      useClass: CanvasDomRendererFactoryV2
     }
   ]
 })
