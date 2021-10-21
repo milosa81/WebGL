@@ -1,12 +1,13 @@
 import {
   APP_ID, Inject, Injectable, RenderComponentType, Renderer, RendererFactory2,
-  RendererType2, Renderer2, RootRenderer, ViewEncapsulation
+  RendererType2, Renderer2, RootRenderer, ViewEncapsulation, RendererStyleFlags2
 } from '@angular/core';
 
 import {
   DOCUMENT, EventManager, ɵDomSharedStylesHost, ɵNAMESPACE_URIS as NAMESPACE_URIS
 } from '@angular/platform-browser';
 
+/* tslint:disable */
 const COMPONENT_REGEX = /%COMP%/g;
 export const COMPONENT_VARIABLE = '%COMP%';
 export const HOST_ATTR = `_nghost-${COMPONENT_VARIABLE}`;
@@ -18,6 +19,14 @@ export function shimContentAttribute(componentShortId: string): string {
 
 export function shimHostAttribute(componentShortId: string): string {
   return HOST_ATTR.replace(COMPONENT_REGEX, componentShortId);
+}
+
+const AT_CHARCODE = '@'.charCodeAt(0);
+function checkNoSyntheticProp(name: string, nameKind: string) {
+  if (name.charCodeAt(0) === AT_CHARCODE) {
+    throw new Error(
+        `Found the synthetic ${nameKind} ${name}. Please include either "BrowserAnimationsModule" or "NoopAnimationsModule" in your application.`);
+  }
 }
 
 export function flattenStyles(
@@ -164,17 +173,17 @@ class CanvasDomRenderer implements Renderer2 {
 
   removeClass(el: any, name: string): void { el.classList.remove(name); }
 
-  setStyle(el: any, style: string, value: any, hasVendorPrefix: boolean, hasImportant: boolean):
-      void {
-    if (hasVendorPrefix || hasImportant) {
-      el.style.setProperty(style, value, hasImportant ? 'important' : '');
+  setStyle(el: any, style: string, value: any, flags?: RendererStyleFlags2): void {
+    if (flags & RendererStyleFlags2.DashCase) {
+      el.style.setProperty(
+          style, value, !!(flags & RendererStyleFlags2.Important) ? 'important' : '');
     } else {
       el.style[style] = value;
     }
   }
 
-  removeStyle(el: any, style: string, hasVendorPrefix: boolean): void {
-    if (hasVendorPrefix) {
+  removeStyle(el: any, style: string, flags: RendererStyleFlags2): void {
+    if (flags & RendererStyleFlags2.DashCase) {
       el.style.removeProperty(style);
     } else {
       // IE requires '' instead of null
@@ -183,15 +192,22 @@ class CanvasDomRenderer implements Renderer2 {
     }
   }
 
-  setProperty(el: any, name: string, value: any): void { el[name] = value; }
+  setProperty(el: any, name: string, value: any): void {
+    checkNoSyntheticProp(name, 'property');
+    el[name] = value;
+  }
 
   setValue(node: any, value: string): void { node.nodeValue = value; }
 
-  listen(target: 'window'|'document'|'body'|any, event: string, callback: (event: any) => boolean): () => void {
+  listen(target: 'window'|'document'|'body'|any, event: string, callback: (event: any) => boolean):
+    () => void {
+    checkNoSyntheticProp(event, 'listener');
     if (typeof target === 'string') {
-      return () => this.eventManager.addGlobalEventListener(target, event, decoratePreventDefault(callback));
+      return <() => void>this.eventManager.addGlobalEventListener(
+        target, event, decoratePreventDefault(callback));
     }
-    return () => this.eventManager.addEventListener(target, event, decoratePreventDefault(callback)) as() => void;
+    return <() => void>this.eventManager.addEventListener(
+      target, event, decoratePreventDefault(callback)) as() => void;
   }
 }
 
@@ -253,3 +269,4 @@ class ShadowDomRenderer extends CanvasDomRenderer {
   private nodeOrShadowRoot(node: any): any { return node === this.hostEl ? this.shadowRoot : node; }
 
 }
+/* tslint: enable */
