@@ -72,6 +72,8 @@ export class RendererComponent implements OnInit, AfterContentInit {
     }
 
     if(this.vrControls) {
+      this.vrControls.height = this.height;
+      this.vrControls.width = this.width;
       this.vrControls.setupControls(this.camera.camera, this.renderer);
     }
 
@@ -91,6 +93,15 @@ export class RendererComponent implements OnInit, AfterContentInit {
         this.vrControls.updateControls(this.scene.scene, this.camera.camera);
       }
 
+      if(this.scene.videoComps) {
+        for(const vidComp of this.scene.videoComps.toArray()) {
+          if (vidComp.video.readyState === vidComp.video.HAVE_ENOUGH_DATA) {
+            vidComp.videoImageContext.drawImage(vidComp.video, 0, 0 );
+            if (vidComp.videoTexture) vidComp.videoTexture.needsUpdate = true;
+          }
+        }
+      }
+
       requestAnimationFrame(() => this.render());
     });
   }
@@ -102,14 +113,16 @@ export class RendererComponent implements OnInit, AfterContentInit {
 
   private calcSize(): void {
     if(this.autoSize) {
-      const parent = this.element.nativeElement.parentNode;
-      const { width, height } = parent.getBoundingClientRect();
-
-      this.height = height;
-      this.width = width;
+      this.height = window.innerHeight;
+      this.width = window.innerWidth;
 
       if(this.renderer) {
         this.renderer.setSize(this.width, this.height);
+      }
+
+      if(this.camera) {
+        this.camera.height = this.height;
+        this.camera.width = this.width;
       }
     }
   }
@@ -118,6 +131,8 @@ export class RendererComponent implements OnInit, AfterContentInit {
     if(this.vrControls) {
       if(!this.vrControls.controls) {
         this.vrControls.enabled = true;
+        this.vrControls.height = this.height;
+        this.vrControls.width = this.width;
         this.vrControls.setupControls(this.camera, this.renderer);
       }
 

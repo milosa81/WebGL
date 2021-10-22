@@ -8,14 +8,14 @@ import { Mesh, SphereGeometry, MeshBasicMaterial, TextureLoader } from 'three';
 })
 export class MapMeshComponent implements OnInit {
 
-  @Input() imageSrc: string = 'demo/pano.jpg';
+  @Input() imageSrc: string;
   @Input() scale: number[] = [-1, 1, 1];
 
   @Input() radius: number = 500;
-  @Input() widthSegments: number = 60;
-  @Input() heightSegments: number = 0;
+  @Input() widthSegments: number = 500;
+  @Input() heightSegments: number = 500;
 
-  mesh: Mesh;
+  object: Mesh;
 
   ngOnInit(): void {
     const geometry = new SphereGeometry(this.radius, this.widthSegments, this.heightSegments);
@@ -25,7 +25,7 @@ export class MapMeshComponent implements OnInit {
       map: new TextureLoader().load(this.imageSrc)
     });
 
-    this.mesh = new Mesh(geometry, material);
+    this.object = new Mesh(geometry, material);
   }
 
 }
