@@ -57,53 +57,52 @@ export class RendererComponent implements OnInit, AfterContentInit {
       canvas: this.canvas.nativeElement
     });
 
+    this.renderer.autoClear = true;
+    this.renderer.setClearColor('#16191C', 1);
     this.renderer.setSize(this.width, this.height);
     this.renderer.setPixelRatio(Math.floor(window.devicePixelRatio));
+
+    this.camera.height = this.height;
+    this.camera.width = this.width;
 
     if(this.scene.fog) {
       this.renderer.setClearColor(this.scene.fog.color);
     }
 
-    this.camera.height = this.height;
-    this.camera.width = this.width;
-
-    if(this.orbitControls) {
+    if(this.orbitControls && !this.vrMode) {
       this.orbitControls.setupControls(this.camera.camera, this.renderer);
     }
 
-    if(this.vrControls) {
-      this.vrControls.height = this.height;
-      this.vrControls.width = this.width;
-      this.vrControls.setupControls(this.camera.camera, this.renderer);
+    if(this.vrControls && this.vrMode) {
+      this.setupVR();
     }
 
     this.ngZone.runOutsideAngular(this.render.bind(this));
   }
 
   render(): void {
-    this.ngZone.runOutsideAngular(() => {
-      this.camera.camera.lookAt(this.scene.scene.position);
+    this.camera.camera.lookAt(this.scene.scene.position);
+
+    if(this.orbitControls && !this.vrControls.enabled) {
+      this.orbitControls.updateControls(this.scene.scene, this.camera.camera);
+    }
+
+    if(this.vrControls && this.vrControls.enabled) {
+      this.vrControls.updateControls(this.scene.scene, this.camera.camera);
+    } else {
       this.renderer.render(this.scene.scene, this.camera.camera);
+    }
 
-      if(this.orbitControls) {
-        this.orbitControls.updateControls(this.scene.scene, this.camera.camera);
-      }
-
-      if(this.vrControls) {
-        this.vrControls.updateControls(this.scene.scene, this.camera.camera);
-      }
-
-      if(this.scene.videoComps) {
-        for(const vidComp of this.scene.videoComps.toArray()) {
-          if (vidComp.video.readyState === vidComp.video.HAVE_ENOUGH_DATA) {
-            vidComp.videoImageContext.drawImage(vidComp.video, 0, 0 );
-            if (vidComp.videoTexture) vidComp.videoTexture.needsUpdate = true;
-          }
+    if(this.scene.videoComps) {
+      for(const vidComp of this.scene.videoComps.toArray()) {
+        if (vidComp.video.readyState === vidComp.video.HAVE_ENOUGH_DATA) {
+          vidComp.videoImageContext.drawImage(vidComp.video, 0, 0);
+          if (vidComp.videoTexture) vidComp.videoTexture.needsUpdate = true;
         }
       }
+    }
 
-      requestAnimationFrame(() => this.render());
-    });
+    requestAnimationFrame(() => this.ngZone.runOutsideAngular(this.render.bind(this)));
   }
 
   @HostListener('window:resize')
@@ -124,19 +123,20 @@ export class RendererComponent implements OnInit, AfterContentInit {
         this.camera.height = this.height;
         this.camera.width = this.width;
       }
+
+      if(this.vrControls) {
+        this.vrControls.height = this.height;
+        this.vrControls.width = this.width;
+      }
     }
   }
 
   private setupVR(): void {
     if(this.vrControls) {
-      if(!this.vrControls.controls) {
-        this.vrControls.enabled = true;
-        this.vrControls.height = this.height;
-        this.vrControls.width = this.width;
-        this.vrControls.setupControls(this.camera, this.renderer);
-      }
-
-      this.vrControls.requestPresent();
+      this.vrControls.enabled = true;
+      this.vrControls.height = this.height;
+      this.vrControls.width = this.width;
+      this.vrControls.setupControls(this.camera.camera, this.renderer);
     }
   }
 

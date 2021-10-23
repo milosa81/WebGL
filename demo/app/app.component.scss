@@ -38,6 +38,10 @@ header {
     margin:0 10px;
     position: relative;
 
+    &:focus {
+      outline: none;
+    }
+
     .bar,
     .bar:after,
     .bar:before {
@@ -145,7 +149,26 @@ nav {
   left: 10px;
   z-index: 999;
 
+  .fullscreen-btn {
+    display: inline-block;
+    vertical-align: middle;
+    width: 35px;
+    height: 35px;
+    background: url(../assets/fullscreen.png) no-repeat;
+    background-size: contain;
+    border: none;
+    cursor: pointer;
+    margin-right: 15px;
+
+    &:hover,
+    &:focus {
+      outline: none;
+    }
+  }
+
   .vr-btn {
+    display: inline-block;
+    vertical-align: middle;
     width: 50px;
     height: 50px;
     background: url(../assets/cardboard.png) no-repeat;
@@ -165,5 +188,8 @@ nav {
   .vr-desc {
     color: #FFF;
     font-size: 14px;
+    line-height: 50px;
+    display: inline-block;
+    vertical-align: middle;
   }
 }
